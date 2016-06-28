@@ -1,0 +1,23 @@
+{
+  "name": "js-test",
+  "version": "1.0.0",
+  "description": "Js learning and examples",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OTooleMichael/jstests.git"
+  },
+  "keywords": [
+    "learn",
+    "test"
+  ],
+  "author": "Michael O Toole",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/OTooleMichael/jstests/issues"
+  },
+  "homepage": "https://github.com/OTooleMichael/jstests#readme"
+}
