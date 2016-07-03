@@ -19,5 +19,9 @@
   "bugs": {
     "url": "https://github.com/OTooleMichael/jstests/issues"
   },
-  "homepage": "https://github.com/OTooleMichael/jstests#readme"
+  "homepage": "https://github.com/OTooleMichael/jstests#readme",
+  "dependencies": {
+    "ejs": "^2.3.4",
+    "express": "^4.13.3"
+  }
 }

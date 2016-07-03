@@ -1,0 +1,233 @@
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  	<link rel="icon" href="data:;base64,iVBORw0KGgo=">
+  <style>
+  span:{
+    display: block
+  }
+  .box:nth-child(odd) {
+    background: white;
+  }
+
+  .box:nth-child(even) {
+      background: lightsalmon;
+  }
+  .box{
+    border: solid black 1px;
+  }
+  </style>
+</head>
+<body>
+  <div id="holder">
+  </div>
+  <script src="/static/jquery.js"></script>
+  <script src="/static/feTools.js"></script>
+  <script>
+    function Holder(){
+      this.dom = document.getElementById("holder");
+      this.list = [];
+      this.objs = {};
+      this.sort = {
+        field:"age",
+        direction:-1
+      };
+      return this
+    }
+    Holder.prototype = {
+      constructor:Holder,
+      $:function(){
+        return $(this.dom)
+      },
+      get:function(id){
+        if(typeof id =="string"){
+          return this.objs[id]
+        }else if(typeof id == "number"){
+          return this.list[id]
+        }
+        return null
+      },
+      input:function(obj){
+        var name = obj.name;
+        if(this.objs[name]){
+          this.objs[name].update(obj).setSort();
+        }else{
+          var div = document.createElement('div');
+          div.id = name;
+          div.className = "box";
+          this.dom.appendChild(div);
+          var anObj = new Obj(obj,div,this);
+          this.objs[name] = anObj;
+          var objIndex = this.list.push(anObj) -1;
+          this.objs[name].setSort(objIndex);
+        }
+        this.objs[name].position()
+        return this
+      },
+      order:function(field,direction){
+        this.sort = {
+          field:field,
+          direction:direction
+        }
+        this.list.sort(dynamicSort(field,direction));
+        return this.reIndex()
+        function dynamicSort(prop,direction) {
+            return function (a,b) {
+                var result = (a.data[prop] < b.data[prop]) ? -1 : (a.data[prop] > b.data[prop]) ? 1 : 0;
+                return result * direction;
+            }
+        }
+      },
+      reIndex:function(){
+        for(var i=0;i<this.list.length;i++){
+          this.$().append(this.list[i].dom);
+          this.list[i].setSort(i)
+        }
+        return this
+      }
+    }
+
+    function Obj(obj,dom,holder){
+      this.holder =  holder;
+      this.dom =  dom;
+      this.sortIndex = null;
+      this.sortValue = null;
+      return this.update(obj)
+    }
+
+    Obj.prototype = {
+      constructor:Obj,
+      update:function(obj){
+        this.data = obj;
+        this.name = this.data.name;
+        return this.fillDom()
+      },
+      position:function(index){
+        var list = this.holder.list;
+        var myIndex =  this.sortIndex;
+        var direction = this.holder.sort.direction;
+        var val = this.sortValue;
+        var rightVal = ( this.holder.get(myIndex+1) ) ? this.holder.get(myIndex+1).sortValue:val+1;
+        var leftVal = ( this.holder.get(myIndex-1) ) ? this.holder.get(myIndex-1).sortValue : val-1;
+        console.log(leftVal,val,rightVal);
+        if(leftVal <= val && val <= rightVal){
+          return this
+        }else{
+          return this.move()
+        }
+      },
+      move:function(){
+        console.log("move");
+        var list= this.holder.list;
+        var val = this.sortValue;
+        var myIndex = this.sortIndex;
+        list.splice(myIndex,1);
+        this.$().hide()
+        var moving =  true;
+        for(var i = 0;i<list.length;i++){
+          if(moving){
+            var vals = brothers(i);
+            console.log(vals[0],val,vals[1]);
+            if(vals[0] <= val && val <= vals[1]){
+              var me = this.$().show("slow");
+              if(list[i-1]){
+                list[i-1].$().after( me );
+              }else{
+                this.$().parent().prepend(me)
+              }
+              list.splice(i,0,this.setSort(i));
+              
+              moving = false; 
+            }
+          }
+          list[i].setSort(i)
+        }
+        return this
+        //
+        function brothers(i){
+          i = i-1;
+          var left = (list[i]) ? list[i].sortValue : val-1,
+              right = (list[i+1]) ? list[i+1].sortValue : val+1;
+          return [
+            left,
+            right
+          ]
+        }
+      },
+      $:function(){
+        return $(this.dom)
+      },
+      fillDom:function(){
+        while(this.dom.firstChild){
+          this.dom.removeChild(this.dom.firstChild)
+        }
+        for(var el in this.data){
+          var input = $('<input/>')
+            .change(this.inputChange.bind(this))
+            .attr("id",el)
+            .val(this.data[el] );
+          var div = $("<div/>").html(el+":").attr("class","sp").append(input);
+          this.$().append(div);
+        }
+        return this
+      },
+      inputChange:function(e){
+        var val = parseFloat(e.target.value);
+        var id = e.target.id;
+        if(id != "name"){
+          return this.set(id,val)
+        }else{
+          return this
+        }
+        
+      },
+      setSort:function(index){
+        this.sortIndex =  (typeof index == "number") ? index : this.sortIndex;
+        var i = this.sortIndex;
+        var field =  this.holder.sort.field;
+        var direction =  this.holder.sort.direction;
+        var value = this.data[field] *direction;
+        this.sortValue = value;
+        return this
+      },
+      set:function(type,value){
+        value = value || genObject("a")[type];
+        var obj = this.data;
+        obj[type] = value;
+        return this.setSort().position().update(obj)
+      }
+    }
+
+    var names = ["ann","ben","cat","dog","dad","mum","ele","piano","john","kate","lau","laura","man","woman","pig","horse","pat","tam","isa","rafi","lemon"];
+    var holder =  new Holder();
+    start();
+
+
+
+
+    function start(){
+      for(var i = 0;i<names.length;i++){
+        var obj = genObject(names[i]);
+        holder.input(obj);
+      }
+    }
+    function genObject(name){
+      return {
+        name:name,
+        age:ranWhole(),
+        score:ranWhole(100),
+        room:ranWhole(100),
+        languages:ranWhole(10)
+      }
+    }
+    function ranWhole(x){
+      x = x || 100
+      return Math.round(Math.random()*x)
+    }
+  </script>
+</body>
+
+
+
+
+
