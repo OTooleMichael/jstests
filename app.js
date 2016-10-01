@@ -1,25 +1,31 @@
-var https = require('https');
+/////////////////////////
+//  required modules and scripts
+/////////////////
 var http =require('http');
-var fs = require('fs');
-var express = require('express');
-var httpApp = express();
-var app = express();
+var app = require("./express");
+var db = require("./redis");
+var sockets = require("./sockets");
+var hosts = {
+    port:3000,
+    host:"localhost"
+}
 
-var config = {
-	port:3000,
-	host:"localhost"
-};
+/////////////////////////
+//  Middle Ware Routing
+/////////////////
 
-app.set('view engine','ejs');
-app.use('/static', express.static(__dirname + '/static'));
 
-app.get('/', function(req, res) {     
-  res.render('example');
-});//end app.get paramas
 
-var myServer = app.listen(
-	config.port, 
-	function() {
-		console.log("Server is now listening on Port :"+config.port); 
-	}
-);
+start()
+function start(){
+    db.init(function(err){
+        if(err){
+            throw err
+        }
+        var server = http.createServer(app);
+        var io = sockets.init(server);
+        server.listen(hosts.port,hosts.host, function(){
+            console.log("Server is now listening on Port "+hosts.host+":"+hosts.port); 
+        });
+   });
+}

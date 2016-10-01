@@ -1,0 +1,60 @@
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  	<link rel="icon" href="data:;base64,iVBORw0KGgo=">
+  <style>
+  </style>
+</head>
+<body>
+  <div id="holder">
+     Proxies Text:<textarea type="text" id="proxies"></textarea>
+    <button id="parse">Parse</button>
+    <div id="submitInfo">
+    </div>
+    <ol id="list">
+    </ol>
+  </div>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script>
+  var socket = io.connect();
+  var rows;
+  var elements;
+  $('#parse').click(parse);
+  function parse(){
+    var text = document.getElementById("proxies").value;
+    elements = text.match(/\d+\.[\d\.]+\s[\d]+/gi);
+    elements = elements.map(function(p){
+      return p.replace(/\s/,":")
+    });
+    makeList(elements);
+    var submit = document.createElement("button");
+    submit.onclick = function(){
+      send(elements);
+    };
+    submit.innerHTML = "Submit "+elements.length+" Proxies";
+    document.getElementById("submitInfo").appendChild(submit);
+  }
+  socket.on(proxies,function(res){
+    document.getElementById("submitInfo").innerHTML = res.submitted+" Submitted<br>"+res.errors+" Failed<br>"+res.added+" Added to Db";
+  });
+
+  function makeList(elements){
+    var ol = document.getElementById("list");
+    ol.innerHTML = "";
+    elements.forEach(function(pr){
+      var li  = document.createElement("li");
+      li.innerHTML=pr;
+      ol.appendChild(li);
+    });
+    
+  }
+  function send(proxies){
+    socket.emit("proxies",proxies);
+  }
+  </script>
+</body>
+
+
+
+
+

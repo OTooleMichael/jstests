@@ -1,0 +1,33 @@
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  	<link rel="icon" href="data:;base64,iVBORw0KGgo=">
+  <style>
+
+  </style>
+</head>
+<body>
+  <div id="holder">
+    <%=reason%>
+    Please Login
+    <form action="/login" method="post">
+     User:<input type="text" name="user">
+     Pass:<input type="text" name="pass">
+     <input id="redirect" type="text" name="redirect">
+     <input type="submit">
+    </form>
+  </div>
+  <script type="text/javascript" src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+  <script>
+    (function(){
+      var redirect =document.getElementById("redirect");
+      redirect.style.display="none";
+      redirect.value  = (location.pathname == "/login") ? "/" : location.pathname;
+    })();
+  </script>
+</body>
+
+
+
+
+
